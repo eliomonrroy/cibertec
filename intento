@@ -54,8 +54,8 @@ public class intento5 extends JFrame {
 
     private JPanel crearPanelJugadores() {
         JPanel panel = new JPanel(new BorderLayout());
-
         JPanel formulario = new JPanel(new GridLayout(4, 2));
+
         modeloCamiseta = new DefaultComboBoxModel<>();
         for (int i = 1; i <= 23; i++) {
             modeloCamiseta.addElement(String.valueOf(i));
@@ -87,7 +87,35 @@ public class intento5 extends JFrame {
         });
 
         JTextField txtNombre = new JTextField();
-        JComboBox<String> comboPosicion = new JComboBox<>(new String[]{"Pilar", "Hooker", "Segunda línea", "Flanker", "Número 8", "Medio scrum", "Apertura", "Centro", "Wing", "Fullback"});
+        JComboBox<String> comboPosicion = new JComboBox<>();
+        String[] posicionesDisponibles = {
+            "Pilar izquierdo (Prop)", "Talonador (Hooker)", "Pilar derecho (Prop)",
+            "Segunda línea izquierdo", "Segunda línea derecho", "ala lado ciego (izquiuerdo)",
+            "ala lado abierto (derecho)", "Medio melé ", "Medio scrum ", "Apertura (Fly half)",
+            "Ala izquierdo (Left wing)", "centro interior", "centro exterior", "Ala derecho (right wing)",
+            "Zaguero (Full back)", "suplente 1", "suplente 2", "suplente 3", "suplente 4",
+            "suplente 5", "suplente 6", "suplente 7", "suplente 8"
+        };
+        for (String pos : posicionesDisponibles) {
+            comboPosicion.addItem(pos);
+        }
+
+        // 🟨 Conjunto para rastrear las posiciones ya usadas
+        java.util.Set<String> posicionesUsadas = new java.util.HashSet<>();
+
+        // 🎨 Renderer para sombrear posiciones ya utilizadas
+        comboPosicion.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (posicionesUsadas.contains(value.toString())) {
+                    c.setForeground(Color.GRAY);
+                } else {
+                    c.setForeground(Color.BLACK);
+                }
+                return c;
+            }
+        });
 
         formulario.add(new JLabel("Número de camiseta:"));
         formulario.add(comboNumeroCamiseta);
@@ -108,19 +136,34 @@ public class intento5 extends JFrame {
             if (comboNumeroCamiseta.getSelectedItem() == null) return;
 
             int numero = Integer.parseInt((String) comboNumeroCamiseta.getSelectedItem());
-            String nombre = txtNombre.getText();
+            String nombre = txtNombre.getText().trim();
             String posicion = (String) comboPosicion.getSelectedItem();
+
+            if (nombre.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "El nombre no puede estar vacío.");
+                return;
+            }
 
             if (buscarJugador(numero) != -1) {
                 JOptionPane.showMessageDialog(null, "Número de camiseta ya registrado");
                 return;
             }
 
+            if (posicionesUsadas.contains(posicion)) {
+                JOptionPane.showMessageDialog(null, "Esa posición ya fue asignada. Elige otra.");
+                return;
+            }
+
+            // ✅ Registrar jugador y marcar la posición como usada
             agregarJugador(numero, nombre, posicion);
+            posicionesUsadas.add(posicion); // Agregar posición usada
+
             modeloTabla.addRow(new Object[]{numero, nombre, posicion});
             comboJugadoresEstadisticas.addItem(numero + " - " + nombre);
             comboConsultaJugador.addItem(nombre + " - Camiseta: " + numero);
+
             comboNumeroCamiseta.repaint();
+            comboPosicion.repaint(); // Refrescar combo para mostrar grises
         });
 
         return panel;
@@ -508,4 +551,5 @@ public class intento5 extends JFrame {
         new intento5();
     }
 }
+
 
